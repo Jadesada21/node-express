@@ -37,7 +37,7 @@ export const errorHandler = (
     }
 
     // Validate error (ส่ง Fields/type ผิด)
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err instanceof Prisma.PrismaClientValidationError) {
         return res.status(400).json({
             status: 'error',
             message: 'Invalid data send to database'
@@ -45,7 +45,7 @@ export const errorHandler = (
     }
 
     // Connection/initialization error
-    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+    if (err instanceof Prisma.PrismaInitializationError) {
         return res.status(500).json({
             status: 'error',
             message: 'Database connection failed'
