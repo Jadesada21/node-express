@@ -45,7 +45,8 @@ export const errorHandler = (
     }
 
     // Connection/initialization error
-    if (err instanceof Prisma.PrismaInitializationError) {
+    if (err instanceof Prisma.PrismaClientInitializationError)
+         {
         return res.status(500).json({
             status: 'error',
             message: 'Database connection failed'
