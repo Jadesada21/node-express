@@ -2,6 +2,7 @@ import express, { Application } from 'express'
 import { errorHandler } from './middleware/errorHandler'
 import cookieParser from 'cookie-parser'
 import cors from 'cors'
+import Routes from './route/index'
 
 const app: Application = express()
 
@@ -13,6 +14,7 @@ app.use(cors({
 app.use(express.json({ limit: '50mb' }))
 app.use(express.urlencoded({ extended: true }))
 
+app.use(Routes)
 
 app.use(errorHandler)
 
