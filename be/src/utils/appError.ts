@@ -1,11 +1,11 @@
 
 export class AppError extends Error {
-    public Statuscode: number
+    public statusCode: number
 
     constructor(message: string, statusCode: number) {
         super(message)
 
-        this.Statuscode = statusCode
+        this.statusCode = statusCode
 
         Object.setPrototypeOf(this, AppError.prototype)
 

@@ -1,5 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { NextFunction, Request, Response } from "express";
+import { AppError } from "../utils/appError";
 
 
 export const errorHandler = (
@@ -9,6 +10,15 @@ export const errorHandler = (
     next: NextFunction
 ) => {
     console.log(err)
+
+    // Custom application errors (ต้องเช็คก่อน instanceof Error ทั่วไป
+    // เพราะ AppError extends Error)
+    if (err instanceof AppError) {
+        return res.status(err.statusCode).json({
+            status: 'error',
+            message: err.message
+        })
+    }
 
     // Known Prisma errors (มี error code ชัดเจน)
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
@@ -45,8 +55,7 @@ export const errorHandler = (
     }
 
     // Connection/initialization error
-    if (err instanceof Prisma.PrismaClientInitializationError)
-         {
+    if (err instanceof Prisma.PrismaClientInitializationError) {
         return res.status(500).json({
             status: 'error',
             message: 'Database connection failed'

@@ -1,13 +1,12 @@
 import { Router } from "express";
 
-import CreateRoute from './auth.route'
-
+import CreateRoute from './create.route'
+import LoginRoute from './login.route'
 
 
 const router = Router()
 
-router.use('/register', CreateRoute)
-
+router.use('/auth', CreateRoute, LoginRoute)
 
 
 export default router

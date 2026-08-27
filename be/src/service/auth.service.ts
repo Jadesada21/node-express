@@ -1,11 +1,11 @@
-import { CreateUserInput, UserResponse } from "../types/auth.types";
+import { UserInput, LoginResponse, UserResponse } from "../types/auth.types";
 import bcrypt from 'bcrypt'
 import { AppError } from "../utils/appError";
 import prisma from "../prisma/prisma";
-import { safeResponse } from "../utils/safeData";
+import jwt from 'jsonwebtoken'
 
 
-function ValidateCreateInput(body: CreateUserInput) {
+function ValidateCreateInput(body: UserInput) {
     const { username, password } = body
 
     if (!username || username.length < 5 || username.length > 20) {
@@ -17,7 +17,7 @@ function ValidateCreateInput(body: CreateUserInput) {
     }
 }
 
-export const CreateUserService = async (body: CreateUserInput): Promise<UserResponse> => {
+export const CreateUserService = async (body: UserInput): Promise<UserResponse> => {
     ValidateCreateInput(body)
 
     const { username, password } = body
@@ -39,4 +39,38 @@ export const CreateUserService = async (body: CreateUserInput): Promise<UserResp
     const { password: _pw, ...safeResponse } = res
 
     return safeResponse
+}
+
+export const LoginUserService = async (input: UserInput): Promise<LoginResponse> => {
+    const { username, password } = input
+
+    const user = await prisma.user.findUnique({ where: { username } })
+    if (!user) {
+        throw new AppError('Username not found', 401)
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password)
+    if (!isPasswordValid) {
+        throw new AppError('Password Invalid', 401)
+    }
+
+    const token = jwt.sign(
+        {
+            id: user.id
+        },
+        process.env.JWT_SECRET as string,
+        {
+            expiresIn: '1d'
+        }
+    )
+    const { password: _pw, ...safeResponse } = user
+
+    return { token, user: safeResponse }
+}
+
+
+export const LogoutService = () => {
+    return {
+        message: "Logout successfully"
+    }
 }

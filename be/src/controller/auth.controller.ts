@@ -1,11 +1,16 @@
-import { NextFunction, Request, Response } from "express";
-import { CreateUserInput } from "../types/auth.types";
+import { Request, Response } from "express";
+import { UserInput } from "../types/auth.types";
 import { AppError } from "../utils/appError";
-import { CreateUserService } from "../service/auth.service";
+import { CreateUserService, LoginUserService } from "../service/auth.service";
+import { asyncHandler } from "../utils/asyncHandler";
 
 
-export const CreateUserController = async (req: Request<CreateUserInput>, res: Response, next: NextFunction) => {
-    try {
+export const CreateUserController = asyncHandler(
+    async (
+        req: Request<{}, {}, UserInput>,
+        res: Response
+    ) => {
+
         const { username, password } = req.body
 
         if (!username || !password) {
@@ -14,8 +19,24 @@ export const CreateUserController = async (req: Request<CreateUserInput>, res: R
 
         const newUser = await CreateUserService(req.body)
         return res.status(201).json({ newUser })
-    } catch (err) {
-        next(err)
     }
+)
 
-}
+export const LoginuserController = asyncHandler(
+    async (
+        req: Request<{}, {}, UserInput>,
+        res: Response
+    ) => {
+        const { token, user } = await LoginUserService(req.body)
+
+        res.cookie('token', token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: process.env.NODE_ENV === 'production' ? "none" : "lax",
+            maxAge: 24 * 60 * 60 * 1000,
+            path: '/'
+        })
+
+        return res.status(200).json({ user })
+    }
+)
