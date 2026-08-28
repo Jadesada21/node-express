@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { UserInput } from "../types/auth.types";
 import { AppError } from "../utils/appError";
-import { CreateUserService, LoginUserService } from "../service/auth.service";
+import { CreateUserService, GetMeService, LoginUserService } from "../service/auth.service";
 import { asyncHandler } from "../utils/asyncHandler";
 
 
@@ -36,6 +36,17 @@ export const LoginuserController = asyncHandler(
             maxAge: 24 * 60 * 60 * 1000,
             path: '/'
         })
+
+        return res.status(200).json({ user })
+    }
+)
+
+export const GetMeController = asyncHandler(
+    async (
+        req: Request,
+        res: Response
+    ) => {
+        const user = await GetMeService(req.user!.id)
 
         return res.status(200).json({ user })
     }

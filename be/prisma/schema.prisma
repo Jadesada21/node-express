@@ -8,8 +8,79 @@ datasource db {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  username  String   @unique @db.VarChar(100)
-  password  String   @db.VarChar(100)
-  createdAt DateTime @default(now()) @db.Timestamptz(6)
+  id        Int        @id @default(autoincrement())
+  username  String     @unique @db.VarChar(100)
+  password  String     @db.VarChar(100)
+  positions Position[]
+  createdAt DateTime   @default(now()) @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Position {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String?
+  createdById Int
+
+  createdBy User       @relation(fields: [createdById], references: [id])
+  criteria  Criteria[]
+  documents Document[]
+
+  @@map("positions")
+}
+
+model Criteria {
+  id         Int      @id @default(autoincrement())
+  keyword    String
+  weight     Int      @default(1)
+  isRequired Boolean  @default(false)
+  positionId Int
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  position     Position      @relation(fields: [positionId], references: [id])
+  matchResults MatchResult[]
+
+  @@map("criterias")
+}
+
+model Document {
+  id            Int             @id @default(autoincrement())
+  filename      String
+  fileUrl       String
+  rawText       String?
+  candidateName String?
+  status        CandidateStatus @default(NEW)
+  positionId    Int
+  createdAt     DateTime        @default(now()) @db.Timestamptz(6)
+  updatedAt     DateTime        @updatedAt
+
+  position     Position      @relation(fields: [positionId], references: [id])
+  matchResults MatchResult[]
+
+  @@map("documents")
+}
+
+model MatchResult {
+  id         Int      @id @default(autoincrement())
+  documentId Int
+  criteriaId Int
+  matched    Boolean
+  score      Float
+  createdAt  DateTime @default(now()) @db.Timestamptz(6)
+
+  document Document @relation(fields: [documentId], references: [id])
+  criteria Criteria @relation(fields: [criteriaId], references: [id])
+
+  @@unique([documentId, criteriaId])
+  @@map("matchResults")
+}
+
+enum CandidateStatus {
+  NEW
+  SHORTLISTED
+  INTERVIEWED
+  REJECTED
+  HIRED
 }

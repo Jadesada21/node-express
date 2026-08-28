@@ -74,3 +74,16 @@ export const LogoutService = () => {
         message: "Logout successfully"
     }
 }
+
+export const GetMeService = async (id: number): Promise<UserResponse> => {
+
+    const user = await prisma.user.findUnique({ where: { id } })
+
+    if (!user) {
+        throw new AppError('User not found', 400)
+    }
+
+    const { password: _pw, ...safeResponse } = user
+
+    return safeResponse
+}
